@@ -1,5 +1,6 @@
 numpy
 scipy
+pandas
 deap
 matplotlib
-mpl_toolkits
+pytest
