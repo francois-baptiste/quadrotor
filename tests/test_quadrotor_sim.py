@@ -6,8 +6,6 @@
 #       Largely based on the work of https://github.com/nikhilkalige
 
 from collections import namedtuple
-
-import matplotlib.pyplot as plt
 import numpy as np
 
 from quadrotor_simulator.quadrotor_dynamics import QuadrotorDynamics
