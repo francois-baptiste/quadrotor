@@ -1,6 +1,5 @@
 sudo: required
-test:
-  script:
-  - apt-get update -qy
-  - apt-get install -y python-dev python-pip python-numpy scipy pandas pytest
-  - python -m pytest tests
+before_install:
+- sudo apt-get update -qq
+- sudo apt-get install -qq python-dev python-pip python-numpy scipy pandas pytest
+script: python -m pytest tests
