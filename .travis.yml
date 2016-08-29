@@ -1,8 +1,11 @@
-language: python
-python:
-  - "2.7"
-  - "3.5"
-# command to install dependencies
-install: "pip install -r tests_requirements.txt"
-# command to run tests
-script: python -m pytest tests
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker pull tailordev/pandas
+  - pip install pytest
+
+script:
+  - python -m pytest tests
