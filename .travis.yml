@@ -10,3 +10,15 @@ before_install:
 
 script:
   - python -m pytest tests
+
+sudo: required
+services:
+    - docker
+language: python
+python:
+    - "3.4"
+before_install:
+    - docker pull tailordev/pandas
+script:
+    - docker run tailordev/pandas /bin/sh -c "/usr/bin/git clone https://github.com/$TRAVIS_REPO_SLUG.git -b $TRAVIS_BRANCH python -m pytest tests;"
+
