@@ -1,22 +1,11 @@
 language: python
 sudo: false
-matrix:
-  include:
-    - python: 2.7
-      addons:
-        apt:
-          packages:
-            - python-scipy
-            - python-pandas
-            
-    - python: 3.5
-    - python: 3.4
-    - python: 2.7
 addons:
   apt:
     packages:
     - python-scipy
     - python-pandas
-
+virtualenv:
+  system_site_packages: true
 script:
   - python -m pytest tests
