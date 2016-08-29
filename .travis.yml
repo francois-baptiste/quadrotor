@@ -1,17 +1,4 @@
 sudo: required
-
-services:
-  - docker
-
-before_install:
-  - docker pull tailordev/pandas
-  - docker ps -a
-  - docker run tailordev/pandas /bin/sh -c "pip install pytest; python -m pytest tests"
-
-script:
-  - python -m pytest tests
-
-sudo: required
 services:
     - docker
 language: python
