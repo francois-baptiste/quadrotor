@@ -5,6 +5,8 @@ services:
 
 before_install:
   - docker pull tailordev/pandas
+  - docker ps -a
+  - docker run carlad/sinatra pip install pytest
   - pip install pytest
 
 script:
