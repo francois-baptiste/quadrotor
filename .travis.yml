@@ -1,11 +1,6 @@
 sudo: required
-services:
-    - docker
-language: python
-python:
-    - "3.4"
-before_install:
-    - docker pull tailordev/pandas
-script:
-    - docker run tailordev/pandas /bin/sh -c "/usr/bin/git clone https://github.com/$TRAVIS_REPO_SLUG.git -b $TRAVIS_BRANCH python -m pytest tests;"
-
+test:
+  script:
+  - apt-get update -qy
+  - apt-get install -y python-dev python-pip python-numpy scipy pandas pytest
+  - python -m pytest tests
