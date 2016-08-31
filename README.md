@@ -1,4 +1,4 @@
-## High Speed Quadrotor flips Learning
+## High Speed Quadrotor flips Simulation
 
 Largely based on the work of https://github.com/nikhilkalige and http://www.kostasalexis.com/simulations-with-simpy.html
 
