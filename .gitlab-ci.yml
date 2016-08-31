@@ -1,0 +1,5 @@
+image: tailordev/pandas
+test:
+  script:
+  - pip install pytest
+  - python -m pytest tests
