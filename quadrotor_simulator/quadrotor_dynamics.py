@@ -10,6 +10,70 @@ import pandas as pd
 from scipy.integrate import odeint
 
 
+def moments(ref_acc, angular_vel, inertia_matrix):
+    """Compute the moments
+
+    Parameters
+    ----------
+    ref_acc : numpy.array
+        The desired angular acceleration that the system should achieve. This
+        should be of form [dp/dt, dq/dt, dr/dt]
+    angular_vel : numpy.array
+        The current angular velocity of the system. This
+        should be of form [p, q, r]
+
+    Returns
+    -------
+    numpy.array
+        The desired moments of the system
+    """
+    inverse_inertia = np.linalg.inv(inertia_matrix)
+    p1 = np.dot(inverse_inertia, angular_vel)
+    p2 = np.dot(inertia_matrix, angular_vel)
+    cross = np.cross(p1, p2)
+    value = ref_acc + cross
+    return np.dot(inertia_matrix, value)
+
+
+def angular_velocity_to_dt_eulerangles(angular_rotation_matrix, angular_vel):
+    """Angular Velocity TO Euler Angles
+    omega = angular velocity :- np.array([p, q, r])
+    """
+    rotation_matrix = np.linalg.inv(angular_rotation_matrix)
+    return np.dot(rotation_matrix, angular_vel)
+
+
+def angular_rotation_matrix(phi, theta, psi):
+    """Rotation matix for Angular Velocity <-> Euler Angles Conversion
+    Use inverse of the matrix to convert from angular velocity to euler rates
+    """
+    cphi = np.cos(phi)
+    sphi = np.sin(phi)
+    cthe = np.cos(theta)
+    sthe = np.sin(theta)
+    cpsi = np.cos(psi)
+    spsi = np.sin(psi)
+    RotMatAngV = np.array([[1, 0, -sthe],
+                           [0, cphi, cthe * sphi],
+                           [0, -spsi, cthe * cphi]
+                           ])
+    return RotMatAngV
+
+
+def rotation_matrix(phi, theta, psi):
+    cphi = np.cos(phi)
+    sphi = np.sin(phi)
+    cthe = np.cos(theta)
+    sthe = np.sin(theta)
+    cpsi = np.cos(psi)
+    spsi = np.sin(psi)
+
+    RotMat = np.array([[cthe * cpsi, sphi * sthe * cpsi - cphi * spsi, cphi * sthe * cpsi + sphi * spsi],
+                       [cthe * spsi, sphi * sthe * spsi + cphi * cpsi, cphi * sthe * spsi - sphi * cpsi],
+                       [-sthe, cthe * sphi, cthe * cphi]])
+    return RotMat
+
+
 class QuadrotorDynamics(object):
     def __init__(self, save_state=True, config=None, dt=0.005):
         """
@@ -121,71 +185,16 @@ class QuadrotorDynamics(object):
         return p1 - cross
 
     def angular_velocity_to_dt_eulerangles(self, df_state):
-        """Angular Velocity TO Euler Angles
-        omega = angular velocity :- np.array([p, q, r])
-        """
-        rotation_matrix = np.linalg.inv(self.angular_rotation_matrix(df_state))
-        return np.dot(rotation_matrix, df_state.omega.values[0])
+        return angular_velocity_to_dt_eulerangles(self.angular_rotation_matrix(df_state), df_state.omega.values[0])
 
     def moments(self, ref_acc, df_state):
-        """Compute the moments
-
-        Parameters
-        ----------
-        ref_acc : numpy.array
-            The desired angular acceleration that the system should achieve. This
-            should be of form [dp/dt, dq/dt, dr/dt]
-        angular_vel : numpy.array
-            The current angular velocity of the system. This
-            should be of form [p, q, r]
-
-        Returns
-        -------
-        numpy.array
-            The desired moments of the system
-        """
-        inverse_inertia = np.linalg.inv(self.inertia_matrix)
-        p1 = np.dot(inverse_inertia, df_state.omega.values[0])
-        p2 = np.dot(self.inertia_matrix, df_state.omega.values[0])
-        cross = np.cross(p1, p2)
-        value = ref_acc + cross
-        return np.dot(self.inertia_matrix, value)
+        return moments(ref_acc, df_state.omega.values[0], self.inertia_matrix)
 
     def angular_rotation_matrix(self, df_state):
-        """Rotation matix for Angular Velocity <-> Euler Angles Conversion
-        Use inverse of the matrix to convert from angular velocity to euler rates
-        """
-        phi, = df_state.orientation.phi
-        theta, = df_state.orientation.theta
-        psi, = df_state.orientation.psi
-        cphi = np.cos(phi)
-        sphi = np.sin(phi)
-        cthe = np.cos(theta)
-        sthe = np.sin(theta)
-        cpsi = np.cos(psi)
-        spsi = np.sin(psi)
-        RotMatAngV = np.array([[1, 0, -sthe],
-                               [0, cphi, cthe * sphi],
-                               [0, -spsi, cthe * cphi]
-                               ])
-        return RotMatAngV
+        return angular_rotation_matrix(*df_state.orientation.values[0])
 
     def rotation_matrix(self, df_state):
-        phi, = df_state.orientation.phi
-        theta, = df_state.orientation.theta
-        psi, = df_state.orientation.psi
-
-        cphi = np.cos(phi)
-        sphi = np.sin(phi)
-        cthe = np.cos(theta)
-        sthe = np.sin(theta)
-        cpsi = np.cos(psi)
-        spsi = np.sin(psi)
-
-        RotMat = np.array([[cthe * cpsi, sphi * sthe * cpsi - cphi * spsi, cphi * sthe * cpsi + sphi * spsi],
-                           [cthe * spsi, sphi * sthe * spsi + cphi * cpsi, cphi * sthe * spsi - sphi * cpsi],
-                           [-sthe, cthe * sphi, cthe * cphi]])
-        return RotMat
+        return rotation_matrix(*df_state.orientation.values[0])
 
     @property
     def inertia_matrix(self):
