@@ -11,7 +11,7 @@ from scipy.integrate import odeint
 
 
 class QuadrotorDynamics(object):
-    def __init__(self, save_state=True, config=None, dt = 0.005):
+    def __init__(self, save_state=True, config=None, dt=0.005):
         """
         Quadrotor Dynamics Parameters
         ----------
@@ -41,13 +41,11 @@ class QuadrotorDynamics(object):
             ['x', 'y', 'z', 'x', 'y', 'z', 'phi', 'theta', 'psi', 'phi_dot', 'theta_dot', 'psi_dot']
         )), names=['variable', 'axis'])
 
-        self.df_state = pd.DataFrame(np.zeros((1, 12)),
-                                     index=[0],
-                                     columns=state_columns)
-
+        self.df_state = pd.DataFrame(columns=state_columns)
         self.df_current_state = pd.DataFrame(np.zeros((1, 12)),
-                                             index=[0],
                                              columns=state_columns)
+        self.t_start = 0
+        self.current_state = np.zeros((12))
 
         state_dot_columns = pd.MultiIndex.from_tuples(list(zip(
             ['velocity', 'velocity', 'velocity', 'acceleration', 'acceleration', 'acceleration', 'omega', 'omega',
@@ -90,11 +88,11 @@ class QuadrotorDynamics(object):
 
         return thrust / 4.0
 
-    # def dt_eulerangles_to_angular_velocity(self, dtEuler, EulerAngles):
-    #     """Euler angles derivatives TO angular velocities
-    #     dtEuler = np.array([dphi/dt, dtheta/dt, dpsi/dt])
-    #     """
-    #     return np.dot(self.angular_rotation_matrix(EulerAngles), dtEuler)
+    def dt_eulerangles_to_angular_velocity(self, dtEuler, EulerAngles):
+        """Euler angles derivatives TO angular velocities
+        dtEuler = np.array([dphi/dt, dtheta/dt, dpsi/dt])
+        """
+        return np.dot(self.angular_rotation_matrix(EulerAngles), dtEuler)
 
     def acceleration(self, thrusts, df_state):
         """Compute the acceleration in inertial reference frame
@@ -226,20 +224,17 @@ class QuadrotorDynamics(object):
             if section.t < (2 * self._dt):
                 continue
 
-            t_start = self.df_state.index[-1]
+            ts = np.arange(self.t_start, self.t_start + section.t, self._dt)
 
-            ts = np.arange(t_start, t_start + section.t, self._dt)
-
-            current_state = self.df_state.tail(1).values[0]
-
-            output = odeint(self._integrator, current_state, ts,
+            output = odeint(self._integrator, self.current_state, ts,
                             args=(section.total_thrust, section.desired_angular_acc))
 
             if self.save_state:
                 # Final state update
                 self.df_state = self.df_state.append(pd.DataFrame(output, index=ts, columns=self.df_state.columns))
-            else:
-                self.df_state = self.df_state.append(pd.DataFrame(output[-1:], index=ts, columns=self.df_state.columns))
+
+            self.t_start = ts[-1]
+            self.current_state = output[-1]
 
         return self.df_state
 
