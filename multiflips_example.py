@@ -22,9 +22,12 @@ TURNS = 5
 class SimulationParams(object):
     def __init__(self):
         self.mass = 1
-        self.Ixx = 0.0053
         self.length = 0.2
+        #inertia about xb,yb
+        self.Ixx = 0.0053
+        #reduced max collective accel.
         self.Bup = 21.58
+        #reduced min collective accel.
         self.Bdown = 3.92
         self.Cpmax = np.pi * 1800 / 180
         self.Cn = TURNS
@@ -45,7 +48,7 @@ class SimulationParams(object):
         p1 = p4 = 0.2
         acc_start = self.get_acceleration(p0, p3)['start']
         p2 = (2 * np.pi * self.Cn / self.Cpmax) - (self.Cpmax / acc_start)
-        return [p0, p1, p2, p3, p4]
+        return (p0, p1, p2, p3, p4)
 
     def get_sections(self, parameters):
         (p0, p1, p2, p3, p4) = parameters
