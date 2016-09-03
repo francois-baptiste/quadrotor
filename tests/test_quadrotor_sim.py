@@ -43,7 +43,6 @@ class SimulationParams(object):
         return [p0, p1, p3]
 
     def get_sections(self, parameters):
-        sections = np.zeros(2, dtype='object')
         [p0, p1, p3] = parameters
 
         ap = self.get_acceleration(p0, p3)
@@ -53,15 +52,16 @@ class SimulationParams(object):
         aq = 0
         ar = 0
 
-        sections[0] = Section(
+        return (
+        Section(
             total_thrust=self.mass * p0,
             desired_angular_acc=[ap['acc'], aq, ar],
-            t=p1)
-
-        sections[1] = Section(
+            t=p1),
+        Section(
             total_thrust=self.mass * self.Bup - 2 * abs(ap['start']) * self.Ixx / self.length,
             desired_angular_acc=[ap['start'], aq, ar],
-            t=T2)
+            t=T2),
+        )
         return sections
 
 
@@ -143,15 +143,3 @@ def test_state_index():
          0.17, 0.175, 0.18, 0.185, 0.19, 0.195, 0.195, 0.2, 0.205, 0.21, 0.215, 0.22, 0.225, 0.23, 0.235, 0.24, 0.245,
          0.25, 0.255, 0.26, 0.265, 0.27, 0.275, 0.28, 0.285, 0.29, 0.295, 0.3, 0.305, 0.31, 0.315, 0.32, 0.325, 0.33,
          0.335, 0.34, 0.345, 0.35, 0.355, 0.36, 0.365, 0.37, 0.375, 0.38, 0.385, 0.39, 0.395, 0.4, 0.405]))
-
-
-if __name__ == "__main__":
-    gen = SimulationParams()
-    quadrotor = QuadrotorDynamics()
-    params = gen.get_initial_parameters()
-    sections = gen.get_sections(params)
-    state = quadrotor.update_state(sections)
-    for variable in ["position", "velocity", "orientation", "omega"]:
-        fig = state[variable].plot(title=variable)
-        plt.gcf().canvas.set_window_title(variable)
-    plt.show()
