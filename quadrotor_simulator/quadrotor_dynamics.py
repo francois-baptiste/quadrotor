@@ -11,7 +11,7 @@ from scipy.integrate import odeint
 
 
 class QuadrotorDynamics(object):
-    def __init__(self, save_state=True, config=None):
+    def __init__(self, save_state=True, config=None, dt = 0.005):
         """
         Quadrotor Dynamics Parameters
         ----------
@@ -31,7 +31,7 @@ class QuadrotorDynamics(object):
         }
 
         self.save_state = save_state
-        self._dt = 0.005  # Simulation Step
+        self._dt = dt  # Simulation Step
         if config:
             self.config.update(config)
 
@@ -268,6 +268,6 @@ class QuadrotorDynamics(object):
         # Acceleration in inertial frame
         self.df_current_state_dot.loc[:, ('velocity')] = self.df_current_state.velocity.values[0]
         self.df_current_state_dot.loc[:, ('acceleration')] = self.acceleration(thrusts, self.df_current_state)
-        self.df_current_state_dot.loc[:, ('omega_dot')] = self.angular_acceleration(self.df_current_state, thrusts)
         self.df_current_state_dot.loc[:, ('omega')] = self.angular_velocity_to_dt_eulerangles(self.df_current_state)
+        self.df_current_state_dot.loc[:, ('omega_dot')] = self.angular_acceleration(self.df_current_state, thrusts)
         return self.df_current_state_dot.values[0]
