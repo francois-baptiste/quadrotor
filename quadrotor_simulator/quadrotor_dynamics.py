@@ -291,8 +291,8 @@ class QuadrotorDynamics(object):
         self.df_current_state.values[:] = state
 
         # omega = self.dt_eulerangles_to_angular_velocity(omega, euler)
-        moments = self.moments(desired_angular_acc, self.df_current_state)
-        thrusts = motor_thrust(self.config, moments, total_thrust)
+        my_moments = moments(desired_angular_acc, self.df_current_state.omega.values[0], self.inertia_matrix)
+        thrusts = motor_thrust(self.config, my_moments, total_thrust)
         # Acceleration in inertial frame
         self.df_current_state_dot.loc[:, ('velocity')] = self.df_current_state.velocity.values[0]
         self.df_current_state_dot.loc[:, ('acceleration')] = self.acceleration(thrusts, self.df_current_state)
