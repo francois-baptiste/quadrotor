@@ -163,10 +163,9 @@ class QuadrotorDynamics(object):
         thrust = np.array([Motor1, .... Motor4])
         """
         force_z_body = np.sum(thrusts) / self.config['mass']
-        rotation_matrix = self.rotation_matrix(df_state)
-        # print rotation_matrix
+        rotation_mat = rotation_matrix(*df_state.orientation.values[0])
         force_body = np.array([0, 0, force_z_body])
-        return np.dot(rotation_matrix, force_body) - np.array([0, 0, self.config['gravity']])
+        return np.dot(rotation_mat, force_body) - np.array([0, 0, self.config['gravity']])
 
     def angular_acceleration(self, df_state, thrust):
         """Compute the angular acceleration in body frame
@@ -184,17 +183,11 @@ class QuadrotorDynamics(object):
         cross = np.cross(p2, p3)
         return p1 - cross
 
-    def angular_velocity_to_dt_eulerangles(self, df_state):
-        return angular_velocity_to_dt_eulerangles(self.angular_rotation_matrix(df_state), df_state.omega.values[0])
-
     def moments(self, ref_acc, df_state):
         return moments(ref_acc, df_state.omega.values[0], self.inertia_matrix)
 
     def angular_rotation_matrix(self, df_state):
         return angular_rotation_matrix(*df_state.orientation.values[0])
-
-    def rotation_matrix(self, df_state):
-        return rotation_matrix(*df_state.orientation.values[0])
 
     @property
     def inertia_matrix(self):
@@ -272,6 +265,8 @@ class QuadrotorDynamics(object):
         # Acceleration in inertial frame
         self.df_current_state_dot.loc[:, ('velocity')] = self.df_current_state.velocity.values[0]
         self.df_current_state_dot.loc[:, ('acceleration')] = self.acceleration(thrusts, self.df_current_state)
-        self.df_current_state_dot.loc[:, ('omega')] = self.angular_velocity_to_dt_eulerangles(self.df_current_state)
+        self.df_current_state_dot.loc[:, ('omega')] = angular_velocity_to_dt_eulerangles(
+            angular_rotation_matrix(*self.df_current_state.orientation.values[0]),
+            self.df_current_state.omega.values[0])
         self.df_current_state_dot.loc[:, ('omega_dot')] = self.angular_acceleration(self.df_current_state, thrusts)
         return self.df_current_state_dot.values[0]

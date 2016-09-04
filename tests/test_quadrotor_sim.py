@@ -53,14 +53,14 @@ class SimulationParams(object):
         ar = 0
 
         return (
-        Section(
-            total_thrust=self.mass * p0,
-            desired_angular_acc=[ap['acc'], aq, ar],
-            t=p1),
-        Section(
-            total_thrust=self.mass * self.Bup - 2 * abs(ap['start']) * self.Ixx / self.length,
-            desired_angular_acc=[ap['start'], aq, ar],
-            t=T2),
+            Section(
+                total_thrust=self.mass * p0,
+                desired_angular_acc=[ap['acc'], aq, ar],
+                t=p1),
+            Section(
+                total_thrust=self.mass * self.Bup - 2 * abs(ap['start']) * self.Ixx / self.length,
+                desired_angular_acc=[ap['start'], aq, ar],
+                t=T2),
         )
         return sections
 
@@ -73,12 +73,12 @@ state = quadrotor.update_state(sections)
 
 
 def test_state_position_x():
-    np.testing.assert_allclose(state.position.x.values, np.zeros(84))
+    np.testing.assert_allclose(state.position.x.values, np.zeros(83))
 
 
 def test_state_position_y():
     np.testing.assert_allclose(state.position.y.values, np.array(
-        [0.00000000e+00, 0.00000000e+00, 1.03717735e-08, 1.64897854e-07, 8.34271060e-07, 2.63630637e-06, 6.43594093e-06,
+        [0.00000000e+00, 1.03717735e-08, 1.64897854e-07, 8.34271060e-07, 2.63630637e-06, 6.43594093e-06,
          1.33452279e-05, 2.47233189e-05, 4.21764376e-05, 6.75578372e-05, 1.02967720e-04, 1.50753162e-04, 2.13507933e-04,
          2.94072359e-04, 3.95532984e-04, 5.21222470e-04, 6.74718958e-04, 8.59845657e-04, 1.08067030e-03, 1.34150433e-03,
          1.64690217e-03, 2.00166005e-03, 2.41081497e-03, 2.87964329e-03, 3.41365895e-03, 4.01861203e-03, 4.70048624e-03,
@@ -95,7 +95,7 @@ def test_state_position_y():
 
 def test_state_position_z():
     np.testing.assert_allclose(state.position.z.values, np.array(
-        [0.00000000e+00, 0.00000000e+00, 1.20150003e-04, 4.80599966e-04, 1.08134957e-03, 1.92239775e-03, 3.00374156e-03,
+        [0.00000000e+00, 1.20150003e-04, 4.80599966e-04, 1.08134957e-03, 1.92239775e-03, 3.00374156e-03,
          4.32537521e-03, 5.88728787e-03, 7.68946202e-03, 9.73187077e-03, 1.20144751e-02, 1.45372206e-02, 1.73000340e-02,
          2.03028192e-02, 2.35454525e-02, 2.70277790e-02, 3.07496069e-02, 3.47107008e-02, 3.89107773e-02, 4.33494993e-02,
          4.80264680e-02, 5.29412170e-02, 5.80932046e-02, 6.34818063e-02, 6.91063066e-02, 7.49658910e-02, 8.10596371e-02,
@@ -112,7 +112,7 @@ def test_state_position_z():
 
 def test_orientation_position_phi():
     np.testing.assert_allclose(state.orientation.phi.values, np.array(
-        [+0.00000000e+00, +0.00000000e+00, -2.54481140e-04, -1.01792454e-03, -2.29033020e-03, -4.07169812e-03,
+        [+0.00000000e+00, -2.54481140e-04, -1.01792454e-03, -2.29033020e-03, -4.07169812e-03,
          -6.36202831e-03, -9.16132076e-03, -1.24695755e-02, -1.62867925e-02, -2.06129717e-02, -2.54481132e-02,
          -3.07922170e-02, -3.66452830e-02, -4.30073113e-02, -4.98783019e-02, -5.72582547e-02, -6.51471698e-02,
          -7.35450472e-02, -8.24518868e-02, -9.18676887e-02, -1.01792453e-01, -1.12226179e-01, -1.23168868e-01,
@@ -129,16 +129,16 @@ def test_orientation_position_phi():
 
 
 def test_orientation_position_theta():
-    np.testing.assert_allclose(state.orientation.theta.values, np.zeros(84))
+    np.testing.assert_allclose(state.orientation.theta.values, np.zeros(83))
 
 
 def test_orientation_position_psi():
-    np.testing.assert_allclose(state.orientation.psi.values, np.zeros(84))
+    np.testing.assert_allclose(state.orientation.psi.values, np.zeros(83))
 
 
 def test_state_index():
     np.testing.assert_allclose(state.orientation.index.values, np.array(
-        [0., 0., 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08,
+        [0., 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08,
          0.085, 0.09, 0.095, 0.1, 0.105, 0.11, 0.115, 0.12, 0.125, 0.13, 0.135, 0.14, 0.145, 0.15, 0.155, 0.16, 0.165,
          0.17, 0.175, 0.18, 0.185, 0.19, 0.195, 0.195, 0.2, 0.205, 0.21, 0.215, 0.22, 0.225, 0.23, 0.235, 0.24, 0.245,
          0.25, 0.255, 0.26, 0.265, 0.27, 0.275, 0.28, 0.285, 0.29, 0.295, 0.3, 0.305, 0.31, 0.315, 0.32, 0.325, 0.33,
