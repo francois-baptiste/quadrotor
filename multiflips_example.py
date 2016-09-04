@@ -5,6 +5,8 @@
 #
 #       Largely based on the work of https://github.com/nikhilkalige
 
+# import matplotlib as mpl
+# mpl.use('Qt5Agg')
 from collections import namedtuple
 
 import matplotlib.pyplot as plt
@@ -14,15 +16,18 @@ from quadrotor_simulator.quadrotor_dynamics import QuadrotorDynamics
 
 Section = namedtuple('Section', ['total_thrust', 'desired_angular_acc', 't'])
 
-TURNS = 3
+TURNS = 5
 
 
 class SimulationParams(object):
     def __init__(self):
         self.mass = 1
-        self.Ixx = 0.0053
         self.length = 0.2
+        # inertia about xb,yb
+        self.Ixx = 0.0053
+        # reduced max collective accel.
         self.Bup = 21.58
+        # reduced min collective accel.
         self.Bdown = 3.92
         self.Cpmax = np.pi * 1800 / 180
         self.Cn = TURNS
@@ -43,11 +48,10 @@ class SimulationParams(object):
         p1 = p4 = 0.2
         acc_start = self.get_acceleration(p0, p3)['start']
         p2 = (2 * np.pi * self.Cn / self.Cpmax) - (self.Cpmax / acc_start)
-        return [p0, p1, p2, p3, p4]
+        return (p0, p1, p2, p3, p4)
 
     def get_sections(self, parameters):
-        sections = np.zeros(5, dtype='object')
-        [p0, p1, p2, p3, p4] = parameters
+        (p0, p1, p2, p3, p4) = parameters
 
         ap = self.get_acceleration(p0, p3)
 
@@ -57,31 +61,29 @@ class SimulationParams(object):
         aq = 0
         ar = 0
 
-        sections[0] = Section(
-            total_thrust=self.mass * p0,
-            desired_angular_acc=[ap['acc'], aq, ar],
-            t=p1)
+        return (
+            Section(
+                total_thrust=self.mass * p0,
+                desired_angular_acc=[ap['acc'], aq, ar],
+                t=p1),
+            Section(
+                total_thrust=self.mass * self.Bup - 2 * abs(ap['start']) * self.Ixx / self.length,
+                desired_angular_acc=[ap['start'], aq, ar],
+                t=T2),
 
-        sections[1] = Section(
-            total_thrust=self.mass * self.Bup - 2 * abs(ap['start']) * self.Ixx / self.length,
-            desired_angular_acc=[ap['start'], aq, ar],
-            t=T2)
+            Section(
+                total_thrust=self.mass * self.Bdown,
+                desired_angular_acc=[ap['coast'], aq, ar],
+                t=p2),
 
-        sections[2] = Section(
-            total_thrust=self.mass * self.Bdown,
-            desired_angular_acc=[ap['coast'], aq, ar],
-            t=p2)
-
-        sections[3] = Section(
-            total_thrust=self.mass * self.Bup - 2 * abs(ap['stop']) * self.Ixx / self.length,
-            desired_angular_acc=[ap['stop'], aq, ar],
-            t=T4)
-
-        sections[4] = Section(
-            total_thrust=self.mass * p3,
-            desired_angular_acc=[ap['recover'], aq, ar],
-            t=p4)
-        return sections
+            Section(
+                total_thrust=self.mass * self.Bup - 2 * abs(ap['stop']) * self.Ixx / self.length,
+                desired_angular_acc=[ap['stop'], aq, ar],
+                t=T4),
+            Section(
+                total_thrust=self.mass * p3,
+                desired_angular_acc=[ap['recover'], aq, ar],
+                t=p4))
 
 
 if __name__ == "__main__":
@@ -90,7 +92,8 @@ if __name__ == "__main__":
     params = gen.get_initial_parameters()
     sections = gen.get_sections(params)
     state = quadrotor.update_state(sections)
-    for variable in ["position", "velocity", "orientation", "omega"]:
-        fig = state[variable].plot(title=variable)
+    for variable in ("position", "velocity", "orientation", "omega", "thrust"):
+        fig, ax = plt.subplots(1, 1)
+        fig = quadrotor.df_state_history[variable].plot(title=variable, ax=ax)
         plt.gcf().canvas.set_window_title(variable)
     plt.show()
