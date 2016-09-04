@@ -23,11 +23,11 @@ class SimulationParams(object):
     def __init__(self):
         self.mass = 1
         self.length = 0.2
-        #inertia about xb,yb
+        # inertia about xb,yb
         self.Ixx = 0.0053
-        #reduced max collective accel.
+        # reduced max collective accel.
         self.Bup = 21.58
-        #reduced min collective accel.
+        # reduced min collective accel.
         self.Bdown = 3.92
         self.Cpmax = np.pi * 1800 / 180
         self.Cn = TURNS
@@ -63,9 +63,9 @@ class SimulationParams(object):
 
         return (
             Section(
-            total_thrust=self.mass * p0,
-            desired_angular_acc=[ap['acc'], aq, ar],
-            t=p1),
+                total_thrust=self.mass * p0,
+                desired_angular_acc=[ap['acc'], aq, ar],
+                t=p1),
             Section(
                 total_thrust=self.mass * self.Bup - 2 * abs(ap['start']) * self.Ixx / self.length,
                 desired_angular_acc=[ap['start'], aq, ar],
@@ -94,6 +94,6 @@ if __name__ == "__main__":
     state = quadrotor.update_state(sections)
     for variable in ("position", "velocity", "orientation", "omega", "thrust"):
         fig, ax = plt.subplots(1, 1)
-        fig = quadrotor.df_state_history[variable].plot(title=variable,ax=ax)
+        fig = quadrotor.df_state_history[variable].plot(title=variable, ax=ax)
         plt.gcf().canvas.set_window_title(variable)
     plt.show()
