@@ -92,7 +92,7 @@ if __name__ == "__main__":
     params = gen.get_initial_parameters()
     sections = gen.get_sections(params)
     state = quadrotor.update_state(sections)
-    for variable in ("position", "velocity", "orientation", "omega"):
+    for variable in ("position", "velocity", "orientation", "omega", "thrust"):
         fig = state[variable].plot(title=variable)
         plt.gcf().canvas.set_window_title(variable)
     plt.show()
