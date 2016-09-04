@@ -145,7 +145,7 @@ class QuadrotorDynamics(object):
             ['x', 'y', 'z', 'x', 'y', 'z', 'phi', 'theta', 'psi', 'phi_dot', 'theta_dot', 'psi_dot', '1', '2', '3', '4', 'dp/dt', 'dq/dt', 'dr/dt']
         )), names=['variable', 'axis'])
 
-        self.df_current_state = pd.DataFrame(np.zeros((1, 16)),
+        self.df_current_state = pd.DataFrame(np.zeros((1, 19)),
                                              columns=state_columns)
         self.df_state_history = pd.DataFrame(columns=state_columns)
         self.t_start = 0
