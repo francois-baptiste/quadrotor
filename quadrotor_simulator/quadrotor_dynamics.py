@@ -137,8 +137,17 @@ class QuadrotorDynamics(object):
         )), names=['variable', 'axis'])
 
         self.df_state = pd.DataFrame(columns=state_columns)
-        self.df_current_state = pd.DataFrame(np.zeros((1, 12)),
+
+
+        state_columns = pd.MultiIndex.from_tuples(list(zip(
+            ['position', 'position', 'position', 'velocity', 'velocity', 'velocity', 'orientation', 'orientation',
+             'orientation', 'omega', 'omega', 'omega', 'thrust', 'thrust', 'thrust', 'thrust', 'desired_angular_acc', 'desired_angular_acc', 'desired_angular_acc'],
+            ['x', 'y', 'z', 'x', 'y', 'z', 'phi', 'theta', 'psi', 'phi_dot', 'theta_dot', 'psi_dot', '1', '2', '3', '4', 'dp/dt', 'dq/dt', 'dr/dt']
+        )), names=['variable', 'axis'])
+
+        self.df_current_state = pd.DataFrame(np.zeros((1, 16)),
                                              columns=state_columns)
+        self.df_state_history = pd.DataFrame(columns=state_columns)
         self.t_start = 0
         self.current_state = np.zeros((12))
 
@@ -269,6 +278,8 @@ class QuadrotorDynamics(object):
             self.t_start = ts[-1]
             self.current_state = output[-1]
 
+            self.df_state_history.drop(self.df_state_history.index[len(self.df_state_history)-1],inplace=True)
+
         return self.df_state
 
     def _integrator(self, state, t, total_thrust, desired_angular_acc):
@@ -288,16 +299,22 @@ class QuadrotorDynamics(object):
             Rates of the input state:
             [x_dot, y_dot, z_dot, xd_dot, yd_dot, zd_dot, phi_dot, theta_dot, psi_dot, p_dot, q_dot, r_dot]
         """
-        self.df_current_state.values[:] = state
+        self.df_current_state.loc[:,:12] = state
+        self.df_current_state.set_index([[t]],inplace =True)
+        self.df_current_state.loc[:, ('desired_angular_acc')] = desired_angular_acc
 
         # omega = self.dt_eulerangles_to_angular_velocity(omega, euler)
         my_moments = moments(desired_angular_acc, self.df_current_state.omega.values[0], self.inertia_matrix)
-        thrusts = motor_thrust(self.config, my_moments, total_thrust)
+        self.df_current_state.loc[:, ('thrust')] = motor_thrust(self.config, my_moments, total_thrust)
         # Acceleration in inertial frame
         self.df_current_state_dot.loc[:, ('velocity')] = self.df_current_state.velocity.values[0]
-        self.df_current_state_dot.loc[:, ('acceleration')] = self.acceleration(thrusts, self.df_current_state)
+        self.df_current_state_dot.loc[:, ('acceleration')] = self.acceleration(self.df_current_state.thrust.values[0], self.df_current_state)
         self.df_current_state_dot.loc[:, ('omega')] = angular_velocity_to_dt_eulerangles(
             angular_rotation_matrix(*self.df_current_state.orientation.values[0]),
             self.df_current_state.omega.values[0])
-        self.df_current_state_dot.loc[:, ('omega_dot')] = self.angular_acceleration(self.df_current_state, thrusts)
+        self.df_current_state_dot.loc[:, ('omega_dot')] = self.angular_acceleration(self.df_current_state, self.df_current_state.thrust.values[0])
+
+        if self.save_state:
+            self.df_state_history = self.df_state_history.append(self.df_current_state)
+
         return self.df_current_state_dot.values[0]

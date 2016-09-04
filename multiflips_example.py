@@ -93,6 +93,7 @@ if __name__ == "__main__":
     sections = gen.get_sections(params)
     state = quadrotor.update_state(sections)
     for variable in ("position", "velocity", "orientation", "omega", "thrust"):
-        fig = state[variable].plot(title=variable)
+        fig, ax = plt.subplots(1, 1)
+        fig = quadrotor.df_state_history[variable].plot(title=variable,ax=ax)
         plt.gcf().canvas.set_window_title(variable)
     plt.show()
